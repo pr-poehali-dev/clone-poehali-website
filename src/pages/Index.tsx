@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const Index = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,10 @@ const Index = () => {
     email: '',
     message: ''
   });
+  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+  const [aiDescription, setAiDescription] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedWebsite, setGeneratedWebsite] = useState<any>(null);
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -21,6 +26,48 @@ const Index = () => {
       description: "Мы свяжемся с вами в ближайшее время.",
     });
     setFormData({ name: '', email: '', message: '' });
+  };
+
+  const handleGenerateWebsite = async () => {
+    if (!aiDescription.trim()) {
+      toast({
+        title: "Ошибка",
+        description: "Опишите, какой сайт вы хотите создать",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/89d39509-bd44-4b24-b180-919b5c3062ed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ description: aiDescription })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setGeneratedWebsite(result.data);
+        toast({
+          title: "Готово!",
+          description: "Ваш сайт успешно создан",
+        });
+      } else {
+        throw new Error(result.error || 'Ошибка генерации');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Ошибка генерации",
+        description: error.message || "Попробуйте еще раз",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -39,7 +86,12 @@ const Index = () => {
             <a href="#blog" className="hover:text-primary transition-colors">Блог</a>
             <a href="#contact" className="hover:text-primary transition-colors">Контакты</a>
           </div>
-          <Button className="gradient-purple hover:opacity-90">Начать проект</Button>
+          <Button 
+            className="gradient-purple hover:opacity-90"
+            onClick={() => setIsGeneratorOpen(true)}
+          >
+            Создать сайт с ИИ
+          </Button>
         </div>
       </nav>
 
@@ -54,9 +106,13 @@ const Index = () => {
               Разработка веб-приложений, которые выделяются. Превращаем идеи в цифровые продукты мирового уровня.
             </p>
             <div className="flex gap-4 justify-center">
-              <Button size="lg" className="gradient-purple hover:opacity-90 text-lg px-8">
+              <Button 
+                size="lg" 
+                className="gradient-purple hover:opacity-90 text-lg px-8"
+                onClick={() => setIsGeneratorOpen(true)}
+              >
                 <Icon name="Rocket" className="mr-2" size={20} />
-                Запустить проект
+                Создать сайт за 1 минуту
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8">
                 Смотреть работы
@@ -314,6 +370,133 @@ const Index = () => {
           </p>
         </div>
       </footer>
+
+      <Dialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-bold text-gradient flex items-center gap-2">
+              <Icon name="Sparkles" size={32} />
+              ИИ-Генератор сайтов
+            </DialogTitle>
+            <DialogDescription className="text-lg">
+              Опишите ваш проект — ИИ создаст структуру сайта за минуту
+            </DialogDescription>
+          </DialogHeader>
+
+          {!generatedWebsite ? (
+            <div className="space-y-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Опишите ваш сайт
+                </label>
+                <Textarea
+                  placeholder="Например: Сайт для кофейни с уютной атмосферой, меню, галереей и формой бронирования столиков"
+                  value={aiDescription}
+                  onChange={(e) => setAiDescription(e.target.value)}
+                  rows={6}
+                  className="bg-background border-border text-base"
+                />
+              </div>
+              
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  <Icon name="Lightbulb" size={18} />
+                  Примеры описаний:
+                </h4>
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>Лендинг для фитнес-клуба с тарифами и расписанием</li>
+                  <li>Портфолио фотографа с галереей работ</li>
+                  <li>Сайт-визитка юридической компании</li>
+                  <li>Интернет-магазин hand-made украшений</li>
+                </ul>
+              </div>
+
+              <Button
+                onClick={handleGenerateWebsite}
+                disabled={isGenerating}
+                className="w-full gradient-purple hover:opacity-90 text-lg py-6"
+              >
+                {isGenerating ? (
+                  <>
+                    <Icon name="Loader2" className="mr-2 animate-spin" size={20} />
+                    Генерирую сайт...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Wand2" className="mr-2" size={20} />
+                    Создать сайт
+                  </>
+                )}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-6 mt-4">
+              <div className="bg-gradient-purple p-6 rounded-lg text-center">
+                <Icon name="CheckCircle2" size={48} className="mx-auto mb-4" />
+                <h3 className="text-2xl font-bold mb-2">{generatedWebsite.title}</h3>
+                <p className="text-foreground/90">{generatedWebsite.description}</p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
+                    <Icon name="Layers" size={20} />
+                    Структура сайта:
+                  </h4>
+                  <Card className="bg-card border-border">
+                    <CardContent className="p-4 space-y-3">
+                      <div>
+                        <p className="font-semibold">Главный экран:</p>
+                        <p className="text-sm text-muted-foreground">{generatedWebsite.hero?.title}</p>
+                      </div>
+                      {generatedWebsite.features && (
+                        <div>
+                          <p className="font-semibold">Преимущества: {generatedWebsite.features.length} блоков</p>
+                        </div>
+                      )}
+                      {generatedWebsite.about && (
+                        <div>
+                          <p className="font-semibold">О компании</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-semibold">Контакты</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => {
+                      setGeneratedWebsite(null);
+                      setAiDescription('');
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Icon name="RefreshCw" className="mr-2" size={18} />
+                    Создать другой
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      toast({
+                        title: "Сохранено!",
+                        description: "Проект добавлен в ваш аккаунт"
+                      });
+                      setIsGeneratorOpen(false);
+                    }}
+                    className="flex-1 gradient-purple"
+                  >
+                    <Icon name="Download" className="mr-2" size={18} />
+                    Сохранить проект
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
