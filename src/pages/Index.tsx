@@ -1,12 +1,319 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
+import Icon from '@/components/ui/icon';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const { toast } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Заявка отправлена!",
+      description: "Мы свяжемся с вами в ближайшее время.",
+    });
+    setFormData({ name: '', email: '', message: '' });
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
-      </div>
+    <div className="min-h-screen gradient-cosmic">
+      <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="text-3xl">🚀</div>
+            <span className="text-2xl font-bold text-gradient">ПОЕХАЛИ</span>
+          </div>
+          <div className="hidden md:flex gap-8">
+            <a href="#home" className="hover:text-primary transition-colors">Главная</a>
+            <a href="#team" className="hover:text-primary transition-colors">О команде</a>
+            <a href="#services" className="hover:text-primary transition-colors">Услуги</a>
+            <a href="#portfolio" className="hover:text-primary transition-colors">Портфолио</a>
+            <a href="#blog" className="hover:text-primary transition-colors">Блог</a>
+            <a href="#contact" className="hover:text-primary transition-colors">Контакты</a>
+          </div>
+          <Button className="gradient-purple hover:opacity-90">Начать проект</Button>
+        </div>
+      </nav>
+
+      <section id="home" className="pt-32 pb-20 px-4">
+        <div className="container mx-auto text-center">
+          <div className="animate-fade-in-up">
+            <h1 className="text-6xl md:text-8xl font-bold mb-6">
+              Создаём сайты<br />
+              <span className="text-gradient">будущего</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Разработка веб-приложений, которые выделяются. Превращаем идеи в цифровые продукты мирового уровня.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Button size="lg" className="gradient-purple hover:opacity-90 text-lg px-8">
+                <Icon name="Rocket" className="mr-2" size={20} />
+                Запустить проект
+              </Button>
+              <Button size="lg" variant="outline" className="text-lg px-8">
+                Смотреть работы
+              </Button>
+            </div>
+          </div>
+          <div className="mt-16 animate-float">
+            <div className="text-8xl">🌌</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="team" className="py-20 px-4 bg-card/30">
+        <div className="container mx-auto">
+          <h2 className="text-5xl font-bold text-center mb-4 animate-fade-in">О команде</h2>
+          <p className="text-center text-muted-foreground mb-16 text-lg">Эксперты, которые делают невозможное возможным</p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { icon: "Users", title: "15+ экспертов", desc: "Дизайнеры, разработчики, маркетологи" },
+              { icon: "Award", title: "50+ проектов", desc: "Успешно запущенных приложений" },
+              { icon: "Clock", title: "5 лет опыта", desc: "В разработке цифровых продуктов" }
+            ].map((item, idx) => (
+              <Card key={idx} className="bg-card border-border hover:border-primary transition-all animate-scale-in">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full gradient-purple flex items-center justify-center">
+                    <Icon name={item.icon as any} size={32} />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="services" className="py-20 px-4">
+        <div className="container mx-auto">
+          <h2 className="text-5xl font-bold text-center mb-4">Услуги</h2>
+          <p className="text-center text-muted-foreground mb-16 text-lg">Полный цикл создания цифровых продуктов</p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { icon: "Palette", title: "Веб-дизайн", desc: "Современные UI/UX решения для вашего бизнеса" },
+              { icon: "Code", title: "Разработка", desc: "Frontend и Backend на современных технологиях" },
+              { icon: "Smartphone", title: "Мобильные приложения", desc: "iOS и Android разработка" },
+              { icon: "ShoppingCart", title: "E-commerce", desc: "Интернет-магазины с полным функционалом" },
+              { icon: "LineChart", title: "SEO оптимизация", desc: "Продвижение и аналитика вашего сайта" },
+              { icon: "Headphones", title: "Поддержка", desc: "Техподдержка 24/7 и обновления" }
+            ].map((service, idx) => (
+              <Card key={idx} className="bg-card border-border hover:border-primary transition-all hover:scale-105">
+                <CardContent className="p-6">
+                  <Icon name={service.icon as any} size={40} className="text-primary mb-4" />
+                  <h3 className="text-xl font-bold mb-2">{service.title}</h3>
+                  <p className="text-muted-foreground">{service.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="portfolio" className="py-20 px-4 bg-card/30">
+        <div className="container mx-auto">
+          <h2 className="text-5xl font-bold text-center mb-4">Портфолио</h2>
+          <p className="text-center text-muted-foreground mb-16 text-lg">Проекты, которыми мы гордимся</p>
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              { 
+                title: "TechStartup Dashboard", 
+                desc: "Панель управления для стартапа с real-time аналитикой",
+                tags: ["React", "Node.js", "PostgreSQL"]
+              },
+              { 
+                title: "Fashion E-commerce", 
+                desc: "Интернет-магазин модной одежды с AI-рекомендациями",
+                tags: ["Next.js", "Stripe", "AI"]
+              },
+              { 
+                title: "HealthTech Platform", 
+                desc: "Платформа для записи к врачам и телемедицины",
+                tags: ["React Native", "Python", "WebRTC"]
+              },
+              { 
+                title: "CryptoTrading Bot", 
+                desc: "Автоматизированная система торговли криптовалютой",
+                tags: ["Python", "ML", "Binance API"]
+              }
+            ].map((project, idx) => (
+              <Card key={idx} className="bg-card border-border hover:border-primary transition-all group overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="h-48 gradient-purple relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-all flex items-center justify-center text-6xl">
+                      {['💻', '🛍️', '🏥', '₿'][idx]}
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-2xl font-bold mb-2">{project.title}</h3>
+                    <p className="text-muted-foreground mb-4">{project.desc}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tags.map((tag, i) => (
+                        <span key={i} className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="blog" className="py-20 px-4">
+        <div className="container mx-auto">
+          <h2 className="text-5xl font-bold text-center mb-4">Блог</h2>
+          <p className="text-center text-muted-foreground mb-16 text-lg">Делимся знаниями и опытом</p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { 
+                title: "Тренды веб-дизайна 2024", 
+                desc: "Какие стили и подходы будут актуальны в новом году",
+                date: "15 декабря 2024",
+                icon: "Sparkles"
+              },
+              { 
+                title: "React vs Vue: что выбрать?", 
+                desc: "Сравнение популярных фреймворков для вашего проекта",
+                date: "10 декабря 2024",
+                icon: "Code2"
+              },
+              { 
+                title: "SEO в 2024: новые правила", 
+                desc: "Как продвигать сайты после обновлений поисковиков",
+                date: "5 декабря 2024",
+                icon: "TrendingUp"
+              }
+            ].map((post, idx) => (
+              <Card key={idx} className="bg-card border-border hover:border-primary transition-all hover:scale-105 cursor-pointer">
+                <CardContent className="p-6">
+                  <Icon name={post.icon as any} size={32} className="text-primary mb-4" />
+                  <p className="text-sm text-muted-foreground mb-2">{post.date}</p>
+                  <h3 className="text-xl font-bold mb-2">{post.title}</h3>
+                  <p className="text-muted-foreground">{post.desc}</p>
+                  <Button variant="link" className="p-0 mt-4 text-primary">
+                    Читать далее <Icon name="ArrowRight" size={16} className="ml-1" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" className="py-20 px-4 bg-card/30">
+        <div className="container mx-auto max-w-4xl">
+          <h2 className="text-5xl font-bold text-center mb-4">Свяжитесь с нами</h2>
+          <p className="text-center text-muted-foreground mb-12 text-lg">Готовы начать ваш проект? Напишите нам!</p>
+          
+          <div className="grid md:grid-cols-2 gap-12">
+            <div>
+              <h3 className="text-2xl font-bold mb-6">Контактная информация</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <Icon name="Mail" className="text-primary mt-1" size={24} />
+                  <div>
+                    <p className="font-semibold">Email</p>
+                    <p className="text-muted-foreground">hello@poehali.dev</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <Icon name="Phone" className="text-primary mt-1" size={24} />
+                  <div>
+                    <p className="font-semibold">Телефон</p>
+                    <p className="text-muted-foreground">+7 (999) 123-45-67</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <Icon name="MapPin" className="text-primary mt-1" size={24} />
+                  <div>
+                    <p className="font-semibold">Адрес</p>
+                    <p className="text-muted-foreground">Москва, Россия</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-8">
+                <h4 className="font-semibold mb-4">Социальные сети</h4>
+                <div className="flex gap-4">
+                  {['Github', 'Linkedin', 'Twitter'].map((social) => (
+                    <Button key={social} variant="outline" size="icon" className="hover:border-primary">
+                      <Icon name={social as any} size={20} />
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <Card className="bg-card border-border">
+              <CardContent className="p-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Имя</label>
+                    <Input
+                      placeholder="Введите ваше имя"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      required
+                      className="bg-background border-border"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Email</label>
+                    <Input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      required
+                      className="bg-background border-border"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Сообщение</label>
+                    <Textarea
+                      placeholder="Расскажите о вашем проекте..."
+                      value={formData.message}
+                      onChange={(e) => setFormData({...formData, message: e.target.value})}
+                      required
+                      rows={5}
+                      className="bg-background border-border"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full gradient-purple hover:opacity-90">
+                    <Icon name="Send" className="mr-2" size={18} />
+                    Отправить заявку
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      <footer className="py-12 px-4 border-t border-border">
+        <div className="container mx-auto text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="text-2xl">🚀</div>
+            <span className="text-xl font-bold text-gradient">ПОЕХАЛИ</span>
+          </div>
+          <p className="text-muted-foreground mb-4">
+            Создаём цифровое будущее вместе
+          </p>
+          <p className="text-sm text-muted-foreground">
+            © 2024 POEHALI.DEV. Все права защищены.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
