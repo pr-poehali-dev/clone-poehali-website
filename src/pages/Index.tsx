@@ -276,37 +276,42 @@ const Index = () => {
             <div>
               <h3 className="text-2xl font-bold mb-6">Контактная информация</h3>
               <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <Icon name="Mail" className="text-primary mt-1" size={24} />
+                <a 
+                  href="https://t.me/FreeWebCreator" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-4 hover:text-primary transition-colors group"
+                >
+                  <Icon name="Send" className="text-primary mt-1 group-hover:scale-110 transition-transform" size={24} />
                   <div>
-                    <p className="font-semibold">Email</p>
-                    <p className="text-muted-foreground">hello@poehali.dev</p>
+                    <p className="font-semibold">Telegram канал</p>
+                    <p className="text-muted-foreground group-hover:text-primary/80">@FreeWebCreator</p>
                   </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <Icon name="Phone" className="text-primary mt-1" size={24} />
+                </a>
+                <a 
+                  href="https://t.me/+pJ_2ss_PeTplYzgy" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-4 hover:text-primary transition-colors group"
+                >
+                  <Icon name="MessageCircle" className="text-primary mt-1 group-hover:scale-110 transition-transform" size={24} />
                   <div>
-                    <p className="font-semibold">Телефон</p>
-                    <p className="text-muted-foreground">+7 (999) 123-45-67</p>
+                    <p className="font-semibold">Секретный чат</p>
+                    <p className="text-muted-foreground group-hover:text-primary/80">Закрытое сообщество</p>
                   </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <Icon name="MapPin" className="text-primary mt-1" size={24} />
+                </a>
+                <a 
+                  href="https://t.me/InfernoClient" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-4 hover:text-primary transition-colors group"
+                >
+                  <Icon name="AtSign" className="text-primary mt-1 group-hover:scale-110 transition-transform" size={24} />
                   <div>
-                    <p className="font-semibold">Адрес</p>
-                    <p className="text-muted-foreground">Москва, Россия</p>
+                    <p className="font-semibold">Связь напрямую</p>
+                    <p className="text-muted-foreground group-hover:text-primary/80">@InfernoClient</p>
                   </div>
-                </div>
-              </div>
-              <div className="mt-8">
-                <h4 className="font-semibold mb-4">Социальные сети</h4>
-                <div className="flex gap-4">
-                  {['Github', 'Linkedin', 'Twitter'].map((social) => (
-                    <Button key={social} variant="outline" size="icon" className="hover:border-primary">
-                      <Icon name={social as any} size={20} />
-                    </Button>
-                  ))}
-                </div>
+                </a>
               </div>
             </div>
 
