@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,6 +6,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+
+interface User {
+  id: number;
+  email: string;
+  name: string;
+  energy: number;
+  is_admin: boolean;
+}
 
 const Index = () => {
   const [formData, setFormData] = useState({
@@ -17,7 +25,23 @@ const Index = () => {
   const [aiDescription, setAiDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedWebsite, setGeneratedWebsite] = useState<any>(null);
+  
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authForm, setAuthForm] = useState({ email: '', password: '', name: '' });
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  
   const { toast } = useToast();
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    const savedToken = localStorage.getItem('token');
+    if (savedUser && savedToken) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,12 +110,49 @@ const Index = () => {
             <a href="#blog" className="hover:text-primary transition-colors">Блог</a>
             <a href="#contact" className="hover:text-primary transition-colors">Контакты</a>
           </div>
-          <Button 
-            className="gradient-purple hover:opacity-90"
-            onClick={() => setIsGeneratorOpen(true)}
-          >
-            Создать сайт с ИИ
-          </Button>
+          <div className="flex items-center gap-3">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="text-sm">
+                  <div className="font-semibold">{user.name}</div>
+                  <div className="text-primary flex items-center gap-1">
+                    <Icon name="Zap" size={14} />
+                    {user.energy} энергии
+                  </div>
+                </div>
+                {user.is_admin && (
+                  <Button variant="outline" size="sm" onClick={() => setIsAdminOpen(true)}>
+                    <Icon name="Shield" size={16} className="mr-1" />
+                    Админка
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('token');
+                    setUser(null);
+                  }}
+                >
+                  Выход
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                variant="outline"
+                onClick={() => setIsAuthOpen(true)}
+              >
+                Войти
+              </Button>
+            )}
+            <Button 
+              className="gradient-purple hover:opacity-90"
+              onClick={() => user ? setIsGeneratorOpen(true) : setIsAuthOpen(true)}
+            >
+              Создать сайт с ИИ
+            </Button>
+          </div>
         </div>
       </nav>
 
@@ -105,17 +166,23 @@ const Index = () => {
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Разработка веб-приложений, которые выделяются. Превращаем идеи в цифровые продукты мирового уровня.
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex gap-4 justify-center flex-wrap">
               <Button 
                 size="lg" 
                 className="gradient-purple hover:opacity-90 text-lg px-8"
-                onClick={() => setIsGeneratorOpen(true)}
+                onClick={() => user ? setIsGeneratorOpen(true) : setIsAuthOpen(true)}
               >
                 <Icon name="Rocket" className="mr-2" size={20} />
                 Создать сайт за 1 минуту
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8">
-                Смотреть работы
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg px-8"
+                onClick={() => window.open('https://inferno-client-clone--preview.poehali.dev/', '_blank')}
+              >
+                <Icon name="ExternalLink" className="mr-2" size={20} />
+                Inferno Client
               </Button>
             </div>
           </div>
@@ -502,6 +569,233 @@ const Index = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isAuthOpen} onOpenChange={setIsAuthOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              {authMode === 'login' ? 'Вход' : 'Регистрация'}
+            </DialogTitle>
+            <DialogDescription>
+              {authMode === 'login' ? 'Войдите в свой аккаунт' : 'Создайте новый аккаунт и получите 100 энергии!'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            try {
+              const response = await fetch('https://functions.poehali.dev/0d261bc0-fe85-4aa0-ae28-f8aa031d0491', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: authMode,
+                  ...authForm
+                })
+              });
+
+              const result = await response.json();
+
+              if (result.success) {
+                setUser(result.user);
+                localStorage.setItem('user', JSON.stringify(result.user));
+                localStorage.setItem('token', result.token);
+                setIsAuthOpen(false);
+                toast({
+                  title: authMode === 'login' ? 'Добро пожаловать!' : 'Регистрация успешна!',
+                  description: authMode === 'register' ? `Вам начислено ${result.user.energy} энергии` : `Баланс: ${result.user.energy} энергии`
+                });
+                setAuthForm({ email: '', password: '', name: '' });
+              } else {
+                toast({
+                  title: 'Ошибка',
+                  description: result.error,
+                  variant: 'destructive'
+                });
+              }
+            } catch (error: any) {
+              toast({
+                title: 'Ошибка',
+                description: error.message,
+                variant: 'destructive'
+              });
+            }
+          }} className="space-y-4">
+            {authMode === 'register' && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Имя</label>
+                <Input
+                  placeholder="Ваше имя"
+                  value={authForm.name}
+                  onChange={(e) => setAuthForm({...authForm, name: e.target.value})}
+                  required={authMode === 'register'}
+                />
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium mb-2">Email</label>
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={authForm.email}
+                onChange={(e) => setAuthForm({...authForm, email: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Пароль</label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={authForm.password}
+                onChange={(e) => setAuthForm({...authForm, password: e.target.value})}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full gradient-purple">
+              {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+            </Button>
+            <Button
+              type="button"
+              variant="link"
+              className="w-full"
+              onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
+            >
+              {authMode === 'login' ? 'Нет аккаунта? Зарегистрируйтесь' : 'Уже есть аккаунт? Войдите'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {user?.is_admin && (
+        <Dialog open={isAdminOpen} onOpenChange={setIsAdminOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl flex items-center gap-2">
+                <Icon name="Shield" size={28} className="text-primary" />
+                Админ-панель
+              </DialogTitle>
+              <DialogDescription>
+                Управление пользователями и энергией
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <Button
+                onClick={async () => {
+                  try {
+                    const response = await fetch('https://functions.poehali.dev/447adebc-b1b9-4357-9543-fed6afcc0ab3', {
+                      headers: { 'X-Admin-Id': user.id.toString() }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                      setAllUsers(result.users);
+                    }
+                  } catch (error) {
+                    toast({ title: 'Ошибка загрузки', variant: 'destructive' });
+                  }
+                }}
+                className="gradient-purple"
+              >
+                <Icon name="RefreshCw" className="mr-2" size={18} />
+                Загрузить пользователей
+              </Button>
+
+              <div className="grid gap-4">
+                {allUsers.map((u) => (
+                  <Card key={u.id} className="bg-card border-border">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold">{u.name}</p>
+                          <p className="text-sm text-muted-foreground">{u.email}</p>
+                          <p className="text-sm flex items-center gap-1 mt-1">
+                            <Icon name="Zap" size={14} className="text-primary" />
+                            {u.energy} энергии
+                            {u.is_admin && <span className="text-primary ml-2">👑 Админ</span>}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={async () => {
+                              const amount = prompt('Сколько энергии добавить?');
+                              if (amount) {
+                                try {
+                                  const response = await fetch('https://functions.poehali.dev/447adebc-b1b9-4357-9543-fed6afcc0ab3', {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'X-Admin-Id': user.id.toString()
+                                    },
+                                    body: JSON.stringify({
+                                      action: 'update_energy',
+                                      user_id: u.id,
+                                      amount: parseInt(amount)
+                                    })
+                                  });
+                                  const result = await response.json();
+                                  if (result.success) {
+                                    toast({ title: 'Энергия обновлена!' });
+                                    const idx = allUsers.findIndex(user => user.id === u.id);
+                                    if (idx !== -1) {
+                                      allUsers[idx].energy = result.new_energy;
+                                      setAllUsers([...allUsers]);
+                                    }
+                                  }
+                                } catch (error) {
+                                  toast({ title: 'Ошибка', variant: 'destructive' });
+                                }
+                              }
+                            }}
+                          >
+                            <Icon name="Plus" size={16} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              const energy = prompt('Установить энергию:', u.energy.toString());
+                              if (energy) {
+                                try {
+                                  const response = await fetch('https://functions.poehali.dev/447adebc-b1b9-4357-9543-fed6afcc0ab3', {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'X-Admin-Id': user.id.toString()
+                                    },
+                                    body: JSON.stringify({
+                                      action: 'set_energy',
+                                      user_id: u.id,
+                                      energy: parseInt(energy)
+                                    })
+                                  });
+                                  const result = await response.json();
+                                  if (result.success) {
+                                    toast({ title: 'Энергия установлена!' });
+                                    const idx = allUsers.findIndex(user => user.id === u.id);
+                                    if (idx !== -1) {
+                                      allUsers[idx].energy = result.new_energy;
+                                      setAllUsers([...allUsers]);
+                                    }
+                                  }
+                                } catch (error) {
+                                  toast({ title: 'Ошибка', variant: 'destructive' });
+                                }
+                              }
+                            }}
+                          >
+                            <Icon name="Settings" size={16} />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
